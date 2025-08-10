@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSQLiteDB } from "../services/database";
 import { createFileRoute } from "@tanstack/react-router";
 import { LoginForm } from "@/components/forms/login-form";
 import { SignupForm } from "@/components/forms/signup-form";
@@ -13,6 +14,17 @@ export const Route = createFileRoute("/")({
 function App() {
   const [hasAccount, setHasAccount] = useState(true);
   const { showExitDialog, onConfirmExit, onCancelExit } = useBackButton(true);
+  const { performSQLAction } = useSQLiteDB();
+
+  // Initialize the database and create tables if they don't exist
+  useEffect(() => {
+    performSQLAction(async () => {
+      return true;
+    }).catch((error) => {
+      alert(`Database initialization error: ${error.message}`);
+    });
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center  px-4 min-h-screen bg-gray-100">
       <ExitAppDialog

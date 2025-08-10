@@ -1,9 +1,12 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Preferences } from "@capacitor/preferences";
 import { useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { nanoid } from "nanoid";
+import { authenticateUser } from "@/lib/api";
 import { Form, FormField, FormMessage } from "@/components/ui/form";
-import { useMutation} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -38,9 +41,7 @@ export function LoginForm({
     },
   });
 
-  const {
-    clearErrors,
-  } = form;
+  const { clearErrors } = form;
 
   useEffect(() => {
     clearErrors();
@@ -50,11 +51,18 @@ export function LoginForm({
 
   const loginMutation = useMutation({
     mutationFn: async (data: { username: string; password: string }) => {
-      console.log(data);
+      await authenticateUser(data.username, data.password);
     },
-    onSuccess: () => {
-     //console.log("Login successful");
-     navigate({ to: "/app/home" });
+    onSuccess: async () => {
+      alert("Login successful!");
+
+      const token = nanoid();
+      await Preferences.set({ key: "authToken", value: token });
+
+      navigate({ to: "/app/home" });
+    },
+    onError: (error: any) => {
+      alert(`Login failed: ${error.message}`);
     },
   });
 
@@ -143,11 +151,7 @@ export function LoginForm({
                   <Button type="submit" className="w-full">
                     Login
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                  >
+                  <Button type="button" variant="outline" className="w-full">
                     Login with Google
                   </Button>
                 </div>

@@ -8,11 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { registerUser } from "@/lib/api";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormMessage } from "@/components/ui/form";
-import { useMutation} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -51,9 +52,7 @@ export function SignupForm({
     },
   });
 
-  const {
-    clearErrors,
-  } = form;
+  const { reset, clearErrors } = form;
 
   useEffect(() => {
     clearErrors();
@@ -61,17 +60,22 @@ export function SignupForm({
 
   //const queryClient = useQueryClient();
 
-  const loginMutation = useMutation({
+  const signupMutation = useMutation({
     mutationFn: async (data: { username: string; password: string }) => {
-      console.log(data);
+      await registerUser(data.username, data.password);
     },
     onSuccess: () => {
-      //queryClient.invalidateQueries(["user"]);
+      clearErrors();
+      reset();
+      alert("Registration successful! You can now log in.");
+    },
+    onError: (error: any) => {
+      alert(`Error during signup: ${error.message}`);
     },
   });
 
   function handleSubmit(values: z.infer<typeof signupSchema>) {
-    loginMutation.mutate(values);
+    signupMutation.mutate(values);
   }
 
   function handleError(errors: any) {

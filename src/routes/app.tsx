@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Outlet } from "@tanstack/react-router";
+import { getAuthToken } from "@/lib/helpers/auth";
+import { Outlet, redirect } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
 import { NavBottom } from "@/components/nav-buttom";
 import { useBackButton } from "@/lib/helpers/handle-back-button";
@@ -7,6 +8,18 @@ import { useState } from "react";
 import { ExitAppDialog } from "@/components/user-confirmations/exit-app-dialog";
 
 export const Route = createFileRoute("/app")({
+  beforeLoad: async ({ location }) => {
+    const token = await getAuthToken();
+    // If no token is found, redirect to login page
+    if (!token) {
+      throw redirect({
+        to: "/",
+        search: {
+          redirect: location.href,
+        },
+      });
+    }
+  },
   component: LayoutComponent,
 });
 
